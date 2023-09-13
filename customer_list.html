@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List Screen</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <link href="css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="decorative-header">
+                <h3>Customer List</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-success mb-3" id="addCustomer">Add Customer</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Loader -->
+            <div id="loader" class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
+            <table class="table" id="customerTable">
+                <thead>
+                <tr>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    let customerList = []
+
+    document.getElementById('addCustomer').addEventListener('click', function () {
+        window.location.href = "add_new_customer.html";
+    });
+
+    // Function to show the loader
+    function showLoader() {
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('customerTable').style.display = 'none';
+    }
+
+    // Function to hide the loader and display the table
+    function hideLoader() {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('customerTable').style.display = 'table';
+    }
+
+    function deleteCustomer(index) {
+        const uuid = customerList[index].uuid;
+
+        const headers = new Headers();
+        headers.append("Authorization", `Bearer ${sessionStorage.getItem('token')}`);
+
+        const requestOptions = {
+            method: 'POST',
+            headers: headers,
+        };
+
+        fetch(`https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=delete&uuid=${uuid}`, requestOptions)
+            .then(res => {
+                if (!res.ok) {
+                    console.log('Response was not ok')
+                }
+                return res.text()
+            })
+            .then(data => {
+                console.log(data);
+
+                if(data.trim() == 'Successfully deleted') {
+                    alert('Customer deleted successfully!')
+                    // Delete the row from the table
+                    const rowToDelete = document.getElementById(`deleteCustomer${index}`);
+                    if (rowToDelete) {
+                        rowToDelete.remove();
+                    }
+                    customerList.splice(index, 1);
+                }
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    function updateCustomer(index) {
+        sessionStorage.setItem('updateCust', JSON.stringify(customerList[index]))
+        window.location.href = "add_new_customer.html?cmd=update"
+    }
+
+    window.onload = function () {
+        showLoader();
+
+        const headers = new Headers();
+        headers.append("Authorization", `Bearer ${sessionStorage.getItem('token')}`);
+
+        const requestOptions = {
+            method: 'GET',
+            headers: headers,
+        };
+
+        fetch("https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list", requestOptions)
+            .then(res => {
+                if (!res.ok) {
+                    console.log('Response was not ok')
+                }
+                return res.json()
+            })
+            .then(data => {
+              console.log(data);
+
+              const tableBody = document.getElementById('tableBody');
+
+              if (data.length > 0) {
+
+                  customerList = data;
+
+                  customerList.forEach((cust,i) => {
+                  const row = document.createElement('tr');
+                  row.setAttribute('id',`deleteCustomer${i}`);
+
+                  row.innerHTML = `
+                  <td>${cust.first_name}</td>
+                  <td>${cust.last_name}</td>
+                  <td>${cust.address}</td>
+                  <td>${cust.city}</td>
+                  <td>${cust.state}</td>
+                  <td>${cust.email}</td>
+                  <td>${cust.phone}</td>
+                   <td>
+                       <i class="fa fa-circle-minus delete-icon" onclick="deleteCustomer(${i})"></i>
+                       <i class="fa fa-pencil" onclick="updateCustomer(${i})"></i>
+                   </td>
+                  `;
+
+                  tableBody.append(row);
+                })
+                  hideLoader();
+              }
+              else {
+                  hideLoader();
+                  alert('Data Not Found')
+              }
+
+            })
+            .catch(error => {
+                hideLoader();
+                console.log('error', error)
+            });
+
+    }
+
+
+</script>
+
+</body>
+</html>

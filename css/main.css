@@ -1,0 +1,20 @@
+.decorative-header {
+    background-color: #f0ad4e; /* A custom color */
+    color: #333; /* Text color */
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 24px; /* Adjust the font size */
+    font-weight: bold; /* Make the text bold */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add a subtle text shadow */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Add a box shadow */
+    margin-bottom: 50px;
+}
+
+.fa {
+   cursor: pointer;
+}
+
+.delete-icon {
+    color: red;
+}

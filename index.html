@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Screen</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="decorative-header">
+                <h3>Login</h3>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label for="loginId">Login ID:</label>
+                    <input class="form-control" id="loginId" placeholder="Enter Login ID" type="text">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input class="form-control" id="password" placeholder="Enter Password" type="password">
+                </div>
+                <button class="btn btn-primary" id="loginBtn" type="button">
+                    <span class="spinner-border spinner-border-sm d-none" id="spinner"></span>
+                    Submit
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="application/javascript">
+    document.getElementById('loginBtn').addEventListener('click', function () {
+        // Show the spinner when the button is clicked
+        document.getElementById('spinner').classList.remove('d-none');
+
+        const loginApiUrl = 'https://qa2.sunbasedata.com/sunbase/portal/api/assignment_auth.jsp';
+        const loginId = document.getElementById('loginId').value;
+        const password = document.getElementById('password').value;
+
+        const postData = {
+            login_id: loginId,
+            password: password
+        }
+
+        const requestOptions = {
+            method: 'POST',
+            headers: new Headers().append('Content-Type', 'application/json'),
+            body: JSON.stringify(postData)
+        }
+
+        fetch(loginApiUrl, requestOptions).then(res => {
+            if (!res.ok) {
+                console.log('Response was not ok')
+            }
+            return res.json()
+        }).then(data => {
+            console.log('API Response: ', data)
+            sessionStorage.setItem('token', data['access_token'])
+            window.location.replace("customer_list.html")
+
+            // Hide the spinner when the response is received
+            document.getElementById('spinner').classList.add('d-none');
+        }).catch(error => {
+            // Hide the spinner when the response is received
+            document.getElementById('spinner').classList.add('d-none');
+            console.error('Error: ', error)
+        })
+
+    });
+</script>
+</body>
+</html>

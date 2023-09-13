@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Customer</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="decorative-header">
+                <h3 id="title">Add New Customer</h3>
+            </div>
+            <form id="addNewCustForm">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="firstName">First Name:</label>
+                        <input class="form-control" id="firstName" placeholder="Enter First Name" type="text">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="lastName">Last Name:</label>
+                        <input class="form-control" id="lastName" placeholder="Enter Last Name" type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="street">Street:</label>
+                        <input class="form-control" id="street" placeholder="Enter Street" type="text">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="address">Address:</label>
+                        <input class="form-control" id="address" placeholder="Enter Address" type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="city">City:</label>
+                        <input class="form-control" id="city" placeholder="Enter City" type="text">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="state">State:</label>
+                        <input class="form-control" id="state" placeholder="Enter State" type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="email">Email:</label>
+                        <input class="form-control" id="email" placeholder="Enter Email" type="email">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="phone">Phone:</label>
+                        <input class="form-control" id="phone" placeholder="Enter Phone" type="text">
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <button class="btn btn-primary" id="addNewCustBtn" type="button">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    let CMD = "";
+    let updateCustomer = {}
+
+    window.onload = function () {
+
+        const currentUrl = window.location.href;
+        const url = new URL(currentUrl)
+        const queryParams = new URLSearchParams(url.search);
+
+        if (queryParams.has('cmd')) {
+
+            document.getElementById("title").textContent = "Update The Customer"
+
+            updateCustomer = JSON.parse(sessionStorage.getItem('updateCust'));
+
+            document.getElementById("firstName").value = updateCustomer.first_name
+            document.getElementById("lastName").value = updateCustomer.last_name
+            document.getElementById("street").value = updateCustomer.street
+            document.getElementById("address").value = updateCustomer.address
+            document.getElementById("city").value = updateCustomer.city
+            document.getElementById("state").value = updateCustomer.state
+            document.getElementById("email").value = updateCustomer.email
+            document.getElementById("phone").value = updateCustomer.phone
+
+            document.getElementById("addNewCustBtn").textContent = "Update"
+
+            CMD = "update"
+        }
+    }
+
+    document.getElementById('addNewCustBtn').addEventListener('click', function () {
+
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+        const street = document.getElementById("street").value;
+        const address = document.getElementById("address").value;
+        const city = document.getElementById("city").value;
+        const state = document.getElementById("state").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+
+        const headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("Authorization", `Bearer ${sessionStorage.getItem('token')}`);
+
+        const body = JSON.stringify({
+            "first_name": firstName,
+            "last_name": lastName,
+            "street": street,
+            "address": address,
+            "city": city,
+            "state": state,
+            "email": email,
+            "phone": phone
+        });
+
+        const requestOptions = {
+            method: 'POST',
+            headers: headers,
+            body: body,
+        };
+
+       const API_URL = CMD == 'update' ? `https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=update&uuid=${updateCustomer.uuid}` : "https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=create"
+
+        fetch(API_URL, requestOptions)
+            .then(res => {
+                if (!res.ok) {
+                    console.log('Response was not ok')
+                }
+                return res.text()
+            })
+            .then(data => {
+                console.log(data);
+                const msg = CMD == 'update' ? 'Customer updated successfully!' : 'New customer added successfully!';
+                alert(msg)
+                document.getElementById("addNewCustForm").reset();
+                if (CMD == 'update') {
+                    window.location.replace("customer_list.html")
+                }
+            })
+            .catch(error => console.log('error', error));
+    })
+</script>
+</body>
+</html>
